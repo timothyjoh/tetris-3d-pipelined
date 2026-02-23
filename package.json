@@ -1,0 +1,15 @@
+{
+  "name": "mdtoc",
+  "version": "0.1.0",
+  "description": "Markdown table of contents generator",
+  "type": "module",
+  "bin": {
+    "mdtoc": "bin/mdtoc.js"
+  },
+  "scripts": {
+    "test": "node --test src/**/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
