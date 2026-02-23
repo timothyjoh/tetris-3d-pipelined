@@ -1,0 +1,12 @@
+Now let me run the tests to get real numbers.
+All tests pass. Now I have everything I need to write the STATUS.md.
+`STATUS.md` written to the project root. Here's a summary of what it contains:
+
+**Header:** One-liner from the brief, current state (playable game, no tilt/sound/leaderboard yet).
+
+**Phase 1 section covers:**
+- **What was built:** Full engine (board, tetrominoes, SRS rotation, gravity, lock delay, scoring), Three.js renderer with bloom, HUD, keyboard controls
+- **How to run it:** `npm install` + `npm run dev`, plus build steps
+- **Review findings:** Lock delay bug (fixed), incomplete test (fixed), missing `update(dt)` tests (fixed), missing multi-line score tests (fixed); deferred/known debt listed honestly
+- **What's next:** Phase 2 (tilt + sound + polish), Phase 3 (leaderboard + deploy), known limitations
+- **Test coverage:** Real numbers from running the suite — **115 tests passing, 0 failing**, **98.54% line coverage** on engine modules (target was ≥ 80%)

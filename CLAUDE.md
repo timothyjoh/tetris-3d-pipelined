@@ -1,5 +1,16 @@
 # CLAUDE.md
 
+## Project: Tron Tetris
+
+A neon-retro Tetris clone built with Three.js and Vite. See AGENTS.md for
+architecture, install steps, and test commands.
+
+⚠️ **AGENTS.md MUST be read at the start of every session.** It contains
+project conventions, available npm scripts, and architectural decisions that
+all agents must follow.
+
+---
+
 ## ⚠️ FIRST: Read AGENTS.md
 
 If `AGENTS.md` exists, read it NOW before doing anything else. It has project conventions, install steps, test commands, and architecture decisions.
