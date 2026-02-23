@@ -32,3 +32,6 @@
 {"event":"step_done","phase":1,"step":"commit","agent":"bash","status":"error","exitCode":128,"ts":"2026-02-23T23:27:05.009Z"}
 {"event":"step_retry","phase":1,"step":"commit","attempt":1,"ts":"2026-02-23T23:27:05.009Z"}
 {"event":"step_start","phase":1,"step":"commit","agent":"bash","model":"default","ts":"2026-02-23T23:27:35.011Z"}
+{"event":"step_done","phase":1,"step":"commit","agent":"bash","status":"error","exitCode":128,"ts":"2026-02-23T23:27:35.094Z"}
+{"event":"step_retry","phase":1,"step":"commit","attempt":2,"ts":"2026-02-23T23:27:35.094Z"}
+{"event":"step_start","phase":1,"step":"commit","agent":"bash","model":"default","ts":"2026-02-23T23:28:35.095Z"}
