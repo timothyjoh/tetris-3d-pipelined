@@ -65,6 +65,43 @@ src/
 - No E2E tests; unit tests cover engine only (renderer requires WebGL context)
 - GameState constructor accepts `{firstPiece, secondPiece}` for deterministic testing
 
+## Phase 3 Additions
+
+### Leaderboard Module API (`src/engine/leaderboard.js`)
+
+Pure functions (node-testable, no DOM/localStorage dependency):
+- `isTopTen(score, entries)` → `boolean` — true if score qualifies for top-10 (strict `>` vs 10th place; ties do NOT qualify)
+- `insertScore(initials, score, entries)` → `Entry[]` — inserts, sorts descending, caps at 10; does not mutate input
+- `rankEntries(entries)` → `Entry[]` — sorts descending by score, caps at 10; does not mutate input
+
+localStorage wrappers (browser-only, not unit-tested):
+- `loadLeaderboard()` → `Entry[]` — reads from `localStorage` key `tron-tetris-leaderboard`; returns `[]` on error or first call
+- `saveLeaderboard(entries)` — writes JSON to same key
+
+Entry shape: `{ initials: string, score: number }`
+
+### Running a Local Production Build
+
+```bash
+npm run build    # produces dist/
+npm run preview  # serves dist/ locally at http://localhost:4173
+```
+
+### Vercel Deployment
+
+Vite's `dist/` output is a standard static site (single `index.html`, no SPA routing).
+Vercel auto-detects Vite projects — no `vercel.json` is needed.
+Connect the GitHub repository to Vercel; set build command `npm run build`, output directory `dist`.
+
+### Phase 3 Spec Fixes
+
+- **Tilt column fix**: `computeTiltAngle` now called with piece center column (`gameState.col + TETROMINOES[pieceType].width / 2`) instead of left-origin column. All TETROMINOES entries now have a `width` property (I=4, O=2, T/S/Z/J/L=3).
+- **Sweep animation fix**: `render.js` now gates sweep cells by column (`c < Math.floor(sweepProgress * board.cols)`), producing a true left-to-right wipe instead of a uniform fade.
+
+### jsdom for `input.test.js`
+
+The `jsdom` package (installed as devDependency) is used via Vitest's built-in jsdom environment, configured via `environmentMatchGlobs` in `vitest.config.js`. The `@vitest/environment-jsdom` package is NOT needed — Vitest v2 uses `jsdom` directly.
+
 ## Phase 2 Additions
 
 ### AnimationState / Tilt Contract
@@ -76,7 +113,8 @@ Tilt state lives directly on `GameState` as public fields:
 
 The RAF loop in `main.js` drives tilt each frame:
 ```js
-const tiltTarget = gameState.justLocked ? 0 : computeTiltAngle(gameState.col);
+const pieceHalfWidth = gameState.pieceType ? TETROMINOES[gameState.pieceType].width / 2 : 0;
+const tiltTarget = gameState.justLocked ? 0 : (gameState.pieceType ? computeTiltAngle(gameState.col + pieceHalfWidth) : 0);
 if (gameState.justLocked) gameState.justLocked = false;
 const next = stepSpring(gameState.tiltAngle, gameState.tiltVelocity, tiltTarget);
 gameState.tiltAngle = next.angle;

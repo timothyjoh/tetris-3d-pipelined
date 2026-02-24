@@ -1,12 +1,13 @@
-export function setupInput(gameState, onRestart) {
+export function setupInput(gameState, onRestart, options = {}) {
+  const { suppressRestart = () => false } = options;
   const held = new Set();
 
-  window.addEventListener('keydown', (e) => {
+  const onKeydown = (e) => {
     if (held.has(e.code)) return;
     held.add(e.code);
 
-    // Keyboard restart: only when game is over
-    if ((e.code === 'Enter' || e.code === 'KeyR') && gameState.over) {
+    // Keyboard restart: only when game is over and not suppressed (e.g. initials entry)
+    if ((e.code === 'Enter' || e.code === 'KeyR') && gameState.over && !suppressRestart()) {
       onRestart?.();
       return;
     }
@@ -23,10 +24,18 @@ export function setupInput(gameState, onRestart) {
         break;
       case 'KeyP':                 gameState.togglePause();    break;
     }
-  });
+  };
 
-  window.addEventListener('keyup', (e) => {
+  const onKeyup = (e) => {
     held.delete(e.code);
     if (e.code === 'ArrowDown') gameState.stopSoftDrop();
-  });
+  };
+
+  window.addEventListener('keydown', onKeydown);
+  window.addEventListener('keyup', onKeyup);
+
+  return () => {
+    window.removeEventListener('keydown', onKeydown);
+    window.removeEventListener('keyup', onKeyup);
+  };
 }

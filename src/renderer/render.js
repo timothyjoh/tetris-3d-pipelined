@@ -29,8 +29,11 @@ export class BoardRenderer {
           if (isFlash) {
             this.pool.addBlock(c, r, 0xFFFFFF, FLASH_INTENSITY);
           } else if (isSweepRow) {
-            const intensity = SWEEP_INTENSITY * (1 - gameState.sweepProgress);
-            this.pool.addBlock(c, r, 0xFFFFFF, Math.max(0.01, intensity));
+            const sweepFront = Math.floor(gameState.sweepProgress * board.cols);
+            if (c < sweepFront) {
+              const intensity = SWEEP_INTENSITY * (1 - gameState.sweepProgress);
+              this.pool.addBlock(c, r, 0xFFFFFF, Math.max(0.01, intensity));
+            }
           } else {
             this.pool.addBlock(c, r, color);
           }

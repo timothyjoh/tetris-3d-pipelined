@@ -4,9 +4,17 @@ import { createScene } from './renderer/scene.js';
 import { createComposer, createGridLines, createBoardBackground } from './renderer/composer.js';
 import { BoardRenderer } from './renderer/render.js';
 import { setupInput } from './input.js';
-import { updateHud, showOverlay, hideOverlay } from './hud/hud.js';
+import {
+  updateHud, showOverlay, hideOverlay,
+  showInitialsPrompt, setInitialChar, setInitialsCursor,
+  showLeaderboard,
+} from './hud/hud.js';
 import { computeTiltAngle, stepSpring } from './engine/tilt.js';
+import { TETROMINOES } from './engine/tetrominoes.js';
 import { playGameSound } from './audio/sounds.js';
+import {
+  isTopTen, insertScore, rankEntries, loadLeaderboard, saveLeaderboard,
+} from './engine/leaderboard.js';
 
 const canvas = document.getElementById('game-canvas');
 const { renderer, scene, camera } = createScene(canvas);
@@ -30,15 +38,56 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-setupInput(gameState, () => {
-  gameState.restart();
-  hideOverlay();
-});
+// --- Initials entry state ---
+let initialsActive = false;
+let initialsChars = [];
 
-document.getElementById('restart-btn').addEventListener('click', () => {
+function submitInitials() {
+  initialsActive = false;
+  const initials = initialsChars.join('');
+  const current = loadLeaderboard();
+  const updated = insertScore(initials, gameState.score, current);
+  saveLeaderboard(updated);
+  const highlightIndex = updated.findIndex(
+    (e) => e.initials === initials && e.score === gameState.score,
+  );
+  showLeaderboard(updated, highlightIndex);
+}
+
+function handleInitialsKey(e) {
+  if (!initialsActive) return;
+  const key = e.key.toUpperCase();
+  if (/^[A-Z0-9]$/.test(key) && initialsChars.length < 3) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    initialsChars.push(key);
+    setInitialChar(initialsChars.length - 1, key);
+    setInitialsCursor(initialsChars.length < 3 ? initialsChars.length : 3);
+  } else if (e.code === 'Backspace' && initialsChars.length > 0) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    initialsChars.pop();
+    setInitialChar(initialsChars.length, '_');
+    setInitialsCursor(initialsChars.length);
+  } else if (e.code === 'Enter' && initialsChars.length === 3) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    submitInitials();
+  }
+}
+
+window.addEventListener('keydown', handleInitialsKey);
+
+function handleRestart() {
+  initialsActive = false;
+  initialsChars = [];
   gameState.restart();
   hideOverlay();
-});
+}
+
+setupInput(gameState, handleRestart, { suppressRestart: () => initialsActive });
+
+document.getElementById('restart-btn').addEventListener('click', handleRestart);
 
 let lastTime = 0;
 let prevOver = false;
@@ -50,9 +99,12 @@ function loop(ts) {
   gameState.update(dt);
 
   // --- Tilt animation ---
+  const pieceHalfWidth = gameState.pieceType
+    ? TETROMINOES[gameState.pieceType].width / 2
+    : 0;
   const tiltTarget = gameState.justLocked
     ? 0
-    : (gameState.pieceType ? computeTiltAngle(gameState.col) : 0);
+    : (gameState.pieceType ? computeTiltAngle(gameState.col + pieceHalfWidth) : 0);
   if (gameState.justLocked) gameState.justLocked = false;
 
   const next = stepSpring(gameState.tiltAngle, gameState.tiltVelocity, tiltTarget);
@@ -75,6 +127,14 @@ function loop(ts) {
 
   if (gameState.over && !prevOver) {
     showOverlay('GAME OVER', gameState.score);
+    const entries = loadLeaderboard();
+    if (isTopTen(gameState.score, entries)) {
+      initialsChars = [];
+      initialsActive = true;
+      showInitialsPrompt();
+    } else {
+      showLeaderboard(rankEntries(entries), -1);
+    }
   }
   prevOver = gameState.over;
 

@@ -3,6 +3,7 @@ export const TETROMINOES = {
   I: {
     color: 0x00ffff,
     spawnCol: 3,
+    width: 4,
     shapes: [
       [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
       [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
@@ -13,6 +14,7 @@ export const TETROMINOES = {
   O: {
     color: 0xffff00,
     spawnCol: 3,
+    width: 2,
     shapes: [
       [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
       [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
@@ -23,6 +25,7 @@ export const TETROMINOES = {
   T: {
     color: 0xff00ff,
     spawnCol: 3,
+    width: 3,
     shapes: [
       [[0,1,0,0],[1,1,1,0],[0,0,0,0],[0,0,0,0]],
       [[0,1,0,0],[0,1,1,0],[0,1,0,0],[0,0,0,0]],
@@ -33,6 +36,7 @@ export const TETROMINOES = {
   S: {
     color: 0x00ff00,
     spawnCol: 3,
+    width: 3,
     shapes: [
       [[0,1,1,0],[1,1,0,0],[0,0,0,0],[0,0,0,0]],
       [[0,1,0,0],[0,1,1,0],[0,0,1,0],[0,0,0,0]],
@@ -43,6 +47,7 @@ export const TETROMINOES = {
   Z: {
     color: 0xff2040,
     spawnCol: 3,
+    width: 3,
     shapes: [
       [[1,1,0,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
       [[0,0,1,0],[0,1,1,0],[0,1,0,0],[0,0,0,0]],
@@ -53,6 +58,7 @@ export const TETROMINOES = {
   J: {
     color: 0x4040ff,
     spawnCol: 3,
+    width: 3,
     shapes: [
       [[1,0,0,0],[1,1,1,0],[0,0,0,0],[0,0,0,0]],
       [[0,1,1,0],[0,1,0,0],[0,1,0,0],[0,0,0,0]],
@@ -63,6 +69,7 @@ export const TETROMINOES = {
   L: {
     color: 0xff8000,
     spawnCol: 3,
+    width: 3,
     shapes: [
       [[0,0,1,0],[1,1,1,0],[0,0,0,0],[0,0,0,0]],
       [[0,1,0,0],[0,1,0,0],[0,1,1,0],[0,0,0,0]],

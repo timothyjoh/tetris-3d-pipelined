@@ -168,7 +168,7 @@ export class GameState {
   }
 
   _spawnPiece(overridePiece, nextOverride) {
-    this.pieceType = overridePiece ?? this.nextPieceType;
+    this.pieceType = overridePiece ?? this.nextPieceType ?? randomPieceType();
     this.nextPieceType = nextOverride ?? randomPieceType();
     this.rotation = 0;
     this.col = TETROMINOES[this.pieceType].spawnCol;

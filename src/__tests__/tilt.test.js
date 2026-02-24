@@ -31,6 +31,34 @@ describe('computeTiltAngle', () => {
   });
 });
 
+describe('computeTiltAngle — center column (Phase 3 fix)', () => {
+  it('I piece at col 0 with center offset (halfWidth=2) produces ~-3.89°', () => {
+    // I piece width=4, halfWidth=2; center=0+2=2
+    expect(computeTiltAngle(0 + 2)).toBeCloseTo(-3.889, 2);
+  });
+
+  it('T piece at col 0 with center offset (halfWidth=1.5) produces ~-4.67°', () => {
+    // T piece width=3, halfWidth=1.5; center=0+1.5=1.5
+    // formula: (1.5-4.5)/4.5*7 = -3/4.5*7 = -4.667
+    expect(computeTiltAngle(0 + 1.5)).toBeCloseTo(-4.667, 2);
+  });
+
+  it('center column produces values within ±7° for all piece types at all valid cols', () => {
+    const halfWidths = { I: 2, O: 1, T: 1.5, S: 1.5, Z: 1.5, J: 1.5, L: 1.5 };
+    for (const [, hw] of Object.entries(halfWidths)) {
+      for (let col = 0; col <= 6; col++) {
+        const angle = computeTiltAngle(col + hw);
+        expect(Math.abs(angle)).toBeLessThanOrEqual(7);
+      }
+    }
+  });
+
+  it('I piece at rightmost col (col=6, halfWidth=2) produces ~+5.44°', () => {
+    // I piece at col=6, center=8; formula: (8-4.5)/4.5*7 = 3.5/4.5*7 = 5.444
+    expect(computeTiltAngle(6 + 2)).toBeCloseTo(5.444, 2);
+  });
+});
+
 describe('stepSpring', () => {
   it('moves toward target from rest (current=0, velocity=0, target=7)', () => {
     const { angle, velocity } = stepSpring(0, 0, 7);

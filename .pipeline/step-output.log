@@ -1,12 +1,15 @@
-Now let me run the tests to get actual results:
-All tests are in. Now I have everything I need to write the updated STATUS.md:
-Now append the Phase 2 section:
-`STATUS.md` has been updated. Here's a summary of what was written:
+Now let me run the tests to get real numbers:
+I have all the data I need. Let me write the Phase 3 section to STATUS.md:
+Now append the Phase 3 section:
+Let me do a quick sanity check on the final file:
+`STATUS.md` is updated. Here's a summary of what was written:
 
-**Phase 2 section added** covers:
+**Phase 3 section covers:**
 
-- **What We Built** — Board tilt (spring/damper, `boardGroup` Z-rotation), ghost piece (`computeGhostRow` + dim pool render), lock flash (100ms white override on locked cells), line-clear sweep animation (150ms, gravity paused during sweep), all 8 synthesized sound effects via Web Audio API, sound event queue pattern, keyboard restart (Enter/R), and tech-debt cleanup (redundant `randomPieceType()` removed, `onRestart` wired, build warning fixed).
+- **What We Built** — tilt center-column fix (±7° restored), left-to-right sweep fix, leaderboard engine (`isTopTen`/`insertScore`/`rankEntries`/`loadLeaderboard`/`saveLeaderboard`), initials entry UI (3 chars, arcade style), game-over overlay redesign with ranked table and highlight, jsdom test setup for `input.test.js`, localStorage wrapper tests, Vercel deploy readiness, and docs updates.
 
-- **Review Findings** — Honest accounting: the build warning and missing `levelUp` test were fixed; the tilt column deviation (max ~2.33° instead of ±7°) and non-horizontal sweep animation are explicitly called out as deferred known debt for Phase 3.
+- **Review Findings** — Honest about the critical Enter-key race condition (leaderboard confirmation is never visible to the user), plus the four minor issues (XSS risk in `showLeaderboard`, fragile listener accumulation in tests, `isTopTen` sorted-input assumption, duplicate test case). All noted as unfixed.
 
-- **Test Coverage** — Real numbers from `npm run test:coverage`: **163 tests passing, 0 failing**, **98.89% statement coverage** across all 7 engine modules (up from 115 tests / 98.54% after Phase 1).
+- **Test Coverage** — Real numbers from `npm run test:coverage`: **203 tests passing, 0 failing**, **99% line coverage** across all engine modules. The previously 0%-covered `leaderboard.js` localStorage wrappers are now at 100% via the new `leaderboard-storage.test.js`.
+
+- **Overview and Current State** updated to reflect Phase 3 capabilities while being honest about the known UX bug.

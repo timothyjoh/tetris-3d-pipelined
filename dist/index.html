@@ -76,8 +76,54 @@
       box-shadow: 0 0 12px #00ffff44;
     }
     #restart-btn:hover { background: #00ffff22; }
+
+    /* Initials entry */
+    #initials-prompt { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .initials-row { display: flex; gap: 12px; }
+    .init-slot {
+      display: inline-block;
+      width: 40px;
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: 0;
+      border: 1px solid #00ffff;
+      box-shadow: 0 0 8px #00ffff44;
+    }
+    .init-slot.active {
+      border-color: #00ffff;
+      box-shadow: 0 0 16px #00ffff, inset 0 0 8px #00ffff22;
+      animation: blink 0.8s step-end infinite;
+    }
+    @keyframes blink { 50% { border-color: transparent; box-shadow: none; } }
+
+    /* Leaderboard table */
+    #leaderboard-section { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    #leaderboard-table {
+      border-collapse: collapse;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      min-width: 240px;
+    }
+    #leaderboard-table th {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      opacity: 0.7;
+      padding: 4px 12px;
+      border-bottom: 1px solid #00ffff44;
+    }
+    #leaderboard-table td {
+      padding: 4px 12px;
+      text-align: center;
+    }
+    .lb-highlight td {
+      color: #ffffff;
+      text-shadow: 0 0 8px #ffffff, 0 0 16px #00ffff;
+      background: #00ffff18;
+    }
   </style>
-  <script type="module" crossorigin src="/assets/index-DOHBxo8E.js"></script>
+  <script type="module" crossorigin src="/assets/index-CxAR5XXK.js"></script>
 </head>
 <body>
   <div id="app">
@@ -103,6 +149,27 @@
     <div id="overlay" class="hidden">
       <div id="overlay-title">GAME OVER</div>
       <div id="overlay-score"></div>
+
+      <div id="initials-prompt" class="hidden">
+        <div class="hud-label">ENTER INITIALS</div>
+        <div class="initials-row">
+          <span id="init-0" class="init-slot active">_</span>
+          <span id="init-1" class="init-slot">_</span>
+          <span id="init-2" class="init-slot">_</span>
+        </div>
+        <div class="hud-label" style="font-size:10px;opacity:0.5">A–Z · 0–9 · BACKSPACE · ENTER</div>
+      </div>
+
+      <div id="leaderboard-section" class="hidden">
+        <div class="hud-label">TOP 10</div>
+        <table id="leaderboard-table">
+          <thead>
+            <tr><th>#</th><th>NAME</th><th>SCORE</th></tr>
+          </thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
+
       <button id="restart-btn">PLAY AGAIN</button>
     </div>
   </div>
