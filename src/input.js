@@ -5,6 +5,12 @@ export function setupInput(gameState, onRestart) {
     if (held.has(e.code)) return;
     held.add(e.code);
 
+    // Keyboard restart: only when game is over
+    if ((e.code === 'Enter' || e.code === 'KeyR') && gameState.over) {
+      onRestart?.();
+      return;
+    }
+
     switch (e.code) {
       case 'ArrowLeft':            gameState.moveLeft();       break;
       case 'ArrowRight':           gameState.moveRight();      break;

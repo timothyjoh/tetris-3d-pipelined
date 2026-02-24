@@ -60,6 +60,8 @@ describe('GameState', () => {
       }
       // I piece at rot 0 occupies row 1 cols 3-6. Hard drop should fill row 19.
       gs.hardDrop();
+      // Score is deferred via sweep — advance past sweep duration
+      gs.update(151);
       expect(gs.score).toBe(100);
     });
 
@@ -73,6 +75,8 @@ describe('GameState', () => {
         }
       }
       gs.hardDrop();
+      // Score is deferred via sweep — advance past sweep duration
+      gs.update(151);
       expect(gs.score).toBe(300);
     });
 
@@ -86,6 +90,8 @@ describe('GameState', () => {
         }
       }
       gs.hardDrop();
+      // Score is deferred via sweep — advance past sweep duration
+      gs.update(151);
       expect(gs.score).toBe(800);
     });
 
@@ -96,6 +102,8 @@ describe('GameState', () => {
         if (c < 3 || c > 6) gs.board.setCell(c, 19, 1);
       }
       gs.hardDrop();
+      // Score is deferred via sweep — advance past sweep duration
+      gs.update(151);
       expect(gs.score).toBe(200);
     });
   });
@@ -125,6 +133,8 @@ describe('GameState', () => {
         }
       }
       gs.hardDrop();
+      // Level update is deferred via sweep — advance past sweep duration
+      gs.update(151);
       expect(gs.level).toBe(2);
     });
   });
@@ -189,7 +199,7 @@ describe('GameState', () => {
       const gs = new GameState({ firstPiece: 'I', secondPiece: 'T' });
       const nextBefore = gs.nextPieceType;
       gs.hardDrop();
-      // After hard drop, the piece should be what nextPieceType was
+      // After hard drop (no line clear on empty board), the piece should be what nextPieceType was
       expect(gs.pieceType).toBe(nextBefore);
     });
 
@@ -333,6 +343,242 @@ describe('GameState', () => {
       gs.over = true;
       gs.togglePause();
       expect(gs.paused).toBe(false);
+    });
+  });
+
+  // --- Sound Events ---
+  describe('sound events', () => {
+    it('pushes "move" when moveLeft succeeds', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.soundEvents = [];
+      gs.moveLeft();
+      expect(gs.soundEvents).toContain('move');
+    });
+
+    it('does not push "move" when moveLeft is blocked (at left wall)', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.col = 0;
+      gs.soundEvents = [];
+      gs.moveLeft();
+      // I piece at col=0 rotation=0 occupies cols 0-3; moving left would put it at col=-1 (invalid)
+      expect(gs.soundEvents).not.toContain('move');
+    });
+
+    it('pushes "rotate" when rotateCW succeeds', () => {
+      const gs = new GameState({ firstPiece: 'T', secondPiece: 'O' });
+      gs.soundEvents = [];
+      gs.rotateCW();
+      expect(gs.soundEvents).toContain('rotate');
+    });
+
+    it('pushes "hardDrop" on hardDrop', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.soundEvents = [];
+      gs.hardDrop();
+      expect(gs.soundEvents).toContain('hardDrop');
+    });
+
+    it('pushes "lineClear" on single line clear', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      // Fill row 19 except cols 3-6 (where I piece fits)
+      for (let c = 0; c < 10; c++) {
+        if (c < 3 || c > 6) gs.board.setCell(c, 19, 0xFF0000);
+      }
+      gs.row = 18; // position piece so it lands on row 19
+      gs.col = 3;
+      gs.rotation = 0;
+      gs.soundEvents = [];
+      gs.hardDrop();
+      expect(gs.soundEvents).toContain('lineClear');
+      expect(gs.soundEvents).not.toContain('tetris');
+    });
+
+    it('pushes "tetris" on 4-line clear', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      // Pre-fill rows 16-19 completely; the I piece drops to row 14 (cells at
+      // board row 15). getCompletedRows returns [16,17,18,19] → Tetris (4 lines).
+      for (let r = 16; r <= 19; r++) {
+        for (let c = 0; c < 10; c++) {
+          gs.board.setCell(c, r, 0xFF0000);
+        }
+      }
+      gs.soundEvents = [];
+      gs.hardDrop();
+      expect(gs.soundEvents).toContain('tetris');
+      expect(gs.soundEvents).not.toContain('lineClear');
+    });
+
+    it('pushes "gameOver" when spawn is blocked', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      // Fill the top of the board to block spawn
+      for (let c = 0; c < 10; c++) gs.board.setCell(c, 0, 0xFF0000);
+      gs.soundEvents = [];
+      gs._spawnPiece();
+      expect(gs.soundEvents).toContain('gameOver');
+      expect(gs.over).toBe(true);
+    });
+
+    it('pushes "levelUp" when level crosses a threshold during _finalizeSweep', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      // Start at 9 lines cleared so the next clear crosses the 10-line threshold
+      gs.linesCleared = 9;
+      // Set up the board so the I piece (rotation=0, col=3) fills row 19
+      for (let c = 0; c < 10; c++) {
+        if (c < 3 || c > 6) gs.board.setCell(c, 19, 0xFF0000);
+      }
+      gs.row = 18;
+      gs.col = 3;
+      gs.rotation = 0;
+      gs.hardDrop();           // starts sweep (sweeping = true)
+      gs.soundEvents = [];     // clear events accumulated so far
+      gs.update(151);          // finalize sweep — level should tick from 1 to 2
+      expect(gs.level).toBe(2);
+      expect(gs.soundEvents).toContain('levelUp');
+    });
+
+    it('clears soundEvents on restart', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.soundEvents = ['move', 'rotate'];
+      gs.restart();
+      expect(gs.soundEvents).toEqual([]);
+    });
+  });
+
+  // --- Flash State ---
+  describe('lock flash', () => {
+    it('sets flashCells after hardDrop', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.hardDrop();
+      expect(gs.flashCells.length).toBeGreaterThan(0);
+    });
+
+    it('flashCells are cleared after FLASH_DURATION_MS of dt', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.hardDrop();
+      expect(gs.flashCells.length).toBeGreaterThan(0);
+      // Advance time past flash duration (100ms)
+      gs.update(101);
+      expect(gs.flashCells).toEqual([]);
+    });
+
+    it('flash timer advances even when game is over', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.flashCells = [[3, 19]];
+      gs._flashAccum = 0;
+      gs.over = true;
+      gs.update(101);
+      expect(gs.flashCells).toEqual([]);
+    });
+  });
+
+  // --- Sweep State ---
+  describe('line-clear sweep', () => {
+    it('sets sweeping=true after line clear', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      for (let c = 0; c < 10; c++) {
+        if (c < 3 || c > 6) gs.board.setCell(c, 19, 0xFF0000);
+      }
+      gs.row = 18; gs.col = 3; gs.rotation = 0;
+      gs.hardDrop();
+      expect(gs.sweeping).toBe(true);
+      expect(gs.sweepRows.length).toBeGreaterThan(0);
+    });
+
+    it('gravity does not tick during sweep', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      for (let c = 0; c < 10; c++) {
+        if (c < 3 || c > 6) gs.board.setCell(c, 19, 0xFF0000);
+      }
+      gs.row = 18; gs.col = 3; gs.rotation = 0;
+      gs.hardDrop();
+      expect(gs.sweeping).toBe(true);
+      const prevLinesCleared = gs.linesCleared;
+      // Advance 50ms — still within 150ms sweep window
+      gs.update(50);
+      expect(gs.sweeping).toBe(true);
+      // Lines are NOT cleared yet
+      expect(gs.linesCleared).toBe(prevLinesCleared);
+    });
+
+    it('finalizes sweep after SWEEP_DURATION_MS', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      for (let c = 0; c < 10; c++) {
+        if (c < 3 || c > 6) gs.board.setCell(c, 19, 0xFF0000);
+      }
+      gs.row = 18; gs.col = 3; gs.rotation = 0;
+      gs.hardDrop();
+      gs.update(151); // past 150ms sweep window
+      expect(gs.sweeping).toBe(false);
+      expect(gs.linesCleared).toBe(1);
+    });
+
+    it('sweepProgress clamps to 1 at SWEEP_DURATION_MS', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      for (let c = 0; c < 10; c++) {
+        if (c < 3 || c > 6) gs.board.setCell(c, 19, 0xFF0000);
+      }
+      gs.row = 18; gs.col = 3; gs.rotation = 0;
+      gs.hardDrop();
+      // Manually set _sweepAccum to exactly SWEEP_DURATION_MS before finalize fires
+      gs._sweepAccum = 149; // one tick before finalize
+      gs.update(1);         // brings _sweepAccum to 150 — exactly at boundary
+      // sweeping should now be false (finalized), sweepProgress returns 0
+      expect(gs.sweeping).toBe(false);
+      expect(gs.sweepProgress).toBe(0);
+    });
+
+    it('sweepProgress goes from 0 to 1 during sweep', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      for (let c = 0; c < 10; c++) {
+        if (c < 3 || c > 6) gs.board.setCell(c, 19, 0xFF0000);
+      }
+      gs.row = 18; gs.col = 3; gs.rotation = 0;
+      gs.hardDrop();
+      expect(gs.sweepProgress).toBeCloseTo(0, 1);
+      gs.update(75); // halfway
+      expect(gs.sweepProgress).toBeCloseTo(0.5, 1);
+    });
+  });
+
+  // --- Tilt State ---
+  describe('tilt state', () => {
+    it('justLocked is false initially', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      expect(gs.justLocked).toBe(false);
+    });
+
+    it('justLocked is set to true after _lockPiece()', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.hardDrop(); // triggers _lockPiece()
+      expect(gs.justLocked).toBe(true);
+    });
+
+    it('tiltAngle and tiltVelocity reset to 0 on restart()', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.tiltAngle = 5;
+      gs.tiltVelocity = 2;
+      gs.restart();
+      expect(gs.tiltAngle).toBe(0);
+      expect(gs.tiltVelocity).toBe(0);
+    });
+  });
+
+  // --- softDrop sound ---
+  describe('softDrop sound', () => {
+    it('pushes softDrop sound when gravity tick occurs while softDrop=true', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.startSoftDrop();
+      gs.soundEvents = [];
+      // Soft drop interval at level 1 = min(50, 1000) = 50ms
+      gs.update(55); // triggers one soft drop gravity tick
+      expect(gs.soundEvents).toContain('softDrop');
+    });
+
+    it('does NOT push softDrop sound when softDrop=false', () => {
+      const gs = new GameState({ firstPiece: 'I', secondPiece: 'O' });
+      gs.soundEvents = [];
+      gs.update(1001); // normal gravity tick
+      expect(gs.soundEvents).not.toContain('softDrop');
     });
   });
 });

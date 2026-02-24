@@ -1,4 +1,4 @@
 import { defineConfig } from 'vite';
 export default defineConfig({
-  build: { outDir: 'dist', target: 'esnext' },
+  build: { outDir: 'dist', target: 'esnext', chunkSizeWarningLimit: 600 },
 });

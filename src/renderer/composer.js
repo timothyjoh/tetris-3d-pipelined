@@ -21,7 +21,7 @@ export function createComposer(renderer, scene, camera) {
   return composer;
 }
 
-export function createGridLines(scene) {
+export function createGridLines(parent) {
   const positions = [];
   const halfCols = BOARD_COLS / 2;
   const halfRows = BOARD_ROWS / 2;
@@ -45,15 +45,15 @@ export function createGridLines(scene) {
   });
 
   const lines = new THREE.LineSegments(geo, mat);
-  scene.add(lines);
+  parent.add(lines);
   return lines;
 }
 
-export function createBoardBackground(scene) {
+export function createBoardBackground(parent) {
   const geo = new THREE.PlaneGeometry(BOARD_COLS, BOARD_ROWS);
   const mat = new THREE.MeshBasicMaterial({ color: 0x050505 });
   const plane = new THREE.Mesh(geo, mat);
   plane.position.z = -0.05;
-  scene.add(plane);
+  parent.add(plane);
   return plane;
 }

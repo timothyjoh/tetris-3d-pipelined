@@ -16,6 +16,8 @@ const LOCK_DELAY_MS = 500;
 const MAX_LOCK_RESETS = 15;
 const SOFT_DROP_INTERVAL = 50;
 const LINE_SCORES = [0, 100, 300, 500, 800];
+const FLASH_DURATION_MS = 100;
+const SWEEP_DURATION_MS = 150;
 
 export class GameState {
   constructor({ firstPiece, secondPiece } = {}) {
@@ -39,11 +41,50 @@ export class GameState {
     this._lockResets = 0;
     this._landed = false;
 
+    // Tilt animation state (read by main.js and renderer)
+    this.tiltAngle = 0;
+    this.tiltVelocity = 0;
+    this.justLocked = false;   // one-frame signal: piece just locked this frame
+
+    // Sound event queue (consumed by main.js each frame)
+    this.soundEvents = [];
+
+    // Lock flash state (read by renderer)
+    this.flashCells = [];      // Array<[col, row]> of just-locked cells
+    this._flashAccum = 0;
+
+    // Line-clear sweep state (read by renderer)
+    this.sweeping = false;
+    this.sweepRows = [];       // row indices being swept
+    this._sweepAccum = 0;
+
     this._spawnPiece(firstPiece, secondPiece);
   }
 
+  get sweepProgress() {
+    if (!this.sweeping) return 0;
+    return Math.min(1, this._sweepAccum / SWEEP_DURATION_MS);
+  }
+
   update(dt) {
+    // Flash timer: runs regardless of pause/over state
+    if (this.flashCells.length > 0) {
+      this._flashAccum += dt;
+      if (this._flashAccum >= FLASH_DURATION_MS) {
+        this.flashCells = [];
+      }
+    }
+
     if (this.paused || this.over) return;
+
+    // Sweep pause: gravity does not tick during line-clear sweep
+    if (this.sweeping) {
+      this._sweepAccum += dt;
+      if (this._sweepAccum >= SWEEP_DURATION_MS) {
+        this._finalizeSweep();
+      }
+      return;
+    }
 
     const interval = this.softDrop
       ? Math.min(SOFT_DROP_INTERVAL, gravityInterval(this.level))
@@ -68,12 +109,13 @@ export class GameState {
       } else {
         this._landed = false;
         this._lockAccum = 0;
+        if (this.softDrop) this.soundEvents.push('softDrop');
       }
     }
   }
 
-  moveLeft()  { this._tryMove(-1, 0); }
-  moveRight() { this._tryMove(+1, 0); }
+  moveLeft()  { if (this._tryMove(-1, 0)) this.soundEvents.push('move'); }
+  moveRight() { if (this._tryMove(+1, 0)) this.soundEvents.push('move'); }
   rotateCW()  { this._tryRotate(+1); }
   rotateCCW() { this._tryRotate(-1); }
   startSoftDrop() { this.softDrop = true; }
@@ -81,6 +123,7 @@ export class GameState {
 
   hardDrop() {
     if (this.paused || this.over) return;
+    this.soundEvents.push('hardDrop');
     while (this._tryMoveDown()) {}
     this._lockPiece();
   }
@@ -102,7 +145,16 @@ export class GameState {
     this._lockAccum = 0;
     this._lockResets = 0;
     this._landed = false;
-    this.nextPieceType = randomPieceType();
+    // Reset Phase 2 state
+    this.tiltAngle = 0;
+    this.tiltVelocity = 0;
+    this.justLocked = false;
+    this.soundEvents = [];
+    this.flashCells = [];
+    this._flashAccum = 0;
+    this.sweeping = false;
+    this.sweepRows = [];
+    this._sweepAccum = 0;
     this._spawnPiece();
   }
 
@@ -128,6 +180,7 @@ export class GameState {
 
     if (!this.board.isValid(this.pieceType, this.rotation, this.col, this.row)) {
       this.over = true;
+      this.soundEvents.push('gameOver');
     }
   }
 
@@ -156,6 +209,7 @@ export class GameState {
       this.col = result.col;
       this.row = result.row;
       this._resetLock();
+      this.soundEvents.push('rotate');
     }
   }
 
@@ -167,15 +221,45 @@ export class GameState {
   }
 
   _lockPiece() {
+    // Capture locked cells before board write (for flash)
+    const lockedCells = this.board.getPieceCells(this.pieceType, this.rotation, this.col, this.row);
     this.board.lockPiece(this.pieceType, this.rotation, this.col, this.row);
+
+    // Flash state
+    this.flashCells = lockedCells;
+    this._flashAccum = 0;
+
+    // Tilt reset signal
+    this.justLocked = true;
+
+    // Clear active piece (board is now the source of truth for locked cells)
+    this.pieceType = null;
+
     const completedRows = this.board.getCompletedRows();
     if (completedRows.length > 0) {
-      this.board.clearRows(completedRows);
-      this._addScore(completedRows.length);
-      this.linesCleared += completedRows.length;
-      this.level = Math.floor(this.linesCleared / 10) + 1;
+      // Push line-clear sound
+      this.soundEvents.push(completedRows.length === 4 ? 'tetris' : 'lineClear');
+      // Start sweep — _finalizeSweep() will clear rows, score, and spawn
+      this.sweepRows = completedRows;
+      this._sweepAccum = 0;
+      this.sweeping = true;
+      return;
     }
-    this.pieceType = null;
+
+    // No line clear — spawn immediately
+    this._spawnPiece();
+  }
+
+  _finalizeSweep() {
+    const prevLevel = this.level;
+    this.board.clearRows(this.sweepRows);
+    this._addScore(this.sweepRows.length);
+    this.linesCleared += this.sweepRows.length;
+    this.level = Math.floor(this.linesCleared / 10) + 1;
+    if (this.level > prevLevel) this.soundEvents.push('levelUp');
+    this.sweeping = false;
+    this.sweepRows = [];
+    this._sweepAccum = 0;
     this._spawnPiece();
   }
 

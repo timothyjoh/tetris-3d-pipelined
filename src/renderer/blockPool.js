@@ -32,11 +32,12 @@ export class BlockPool {
 
   begin() { this._active = 0; }
 
-  addBlock(col, row, color) {
+  addBlock(col, row, color, emissiveIntensity = 0.6) {
     if (this._active >= this._entries.length) return;
     const { mesh, mat } = this._entries[this._active++];
     mat.color.setHex(color);
     mat.emissive.setHex(color);
+    mat.emissiveIntensity = emissiveIntensity;
     const [x, y, z] = cellToWorld(col, row);
     mesh.position.set(x, y, z);
     mesh.visible = true;
