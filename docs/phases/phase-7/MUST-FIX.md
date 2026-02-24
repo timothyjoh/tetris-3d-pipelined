@@ -13,6 +13,8 @@ The critical issue is operational: the Vercel production deploy was never execut
 ### Task 1: Complete Vercel production deploy and record live URL
 
 **Priority:** Critical
+**Status:** ✅ Fixed
+**What was done:** Authenticated Vercel CLI (`npx vercel login`) and ran `npx vercel --prod --yes`. The project deployed successfully as `sdk-test-lemon.vercel.app`. `README.md:20` updated from the placeholder to `[https://sdk-test-lemon.vercel.app](https://sdk-test-lemon.vercel.app)`. Build exits 0 after the edit.
 
 **Files:**
 - `README.md` — must be updated with the real Vercel URL
@@ -74,6 +76,8 @@ Step 5 — Manual smoke check in any browser (not automated):
 ### Task 2: Strengthen `waitForFunction` guard logic in Tests 3–5
 
 **Priority:** Minor
+**Status:** ✅ Fixed
+**What was done:** The guards at `tests/gameplay.spec.ts:46–49`, `85–88`, and `125–128` were already updated to the correct form (`gs != null && gs.pieceType !== null`) — this was done during the Phase 7 build session. All 10 Playwright E2E tests pass with the correct guards in place. No further changes were needed.
 
 **Files:**
 - `tests/gameplay.spec.ts:46, 82, 119`

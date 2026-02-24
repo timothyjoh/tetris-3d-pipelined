@@ -1,31 +1,14 @@
-Two tasks to fix. Let me read the relevant files first.
-I'll handle Task 2 (the guard fix) right away, then tackle the Vercel deploy.
-Now let me verify none of the old guard patterns remain at those three locations:
-All 3 guard instances updated. Now for Task 1 — the Vercel deploy.
-The CLI is not authenticated. I need to run `vercel login` — this opens a browser prompt for authentication.
-The Vercel CLI is waiting for you to authenticate in the browser. Please:
+Now let me run the test suites to get real numbers.
+All tests pass — 206 Vitest, 10 Playwright. Now I'll update STATUS.md.
+Now append the Phase 7 section:
+Done. Here's what was written to `STATUS.md`:
 
-1. Open this URL in your browser: **https://vercel.com/oauth/device?user_code=JDPT-LGSG**
-2. Log in to your Vercel account and approve the device code
-3. Let me know when you've completed the authentication
-The task completed. Let me verify authentication succeeded:
-Authentication didn't take — `whoami` still fails. Let me try the login again. When it shows the device code URL, please visit it in your browser and approve:
-Please visit this URL in your browser to authenticate:
+**Header updated:** "Last updated after Phase 7" and the overview's "Current state" paragraph updated to mention the live Vercel URL and 10 E2E tests (up from 9).
 
-**https://vercel.com/oauth/device?user_code=ZRND-LRPX**
+**Phase 7 section added** covering:
 
-Log in to your Vercel account and approve the device. Once you confirm in the browser, the CLI will complete authentication and I can proceed with the deploy.
-The Vercel CLI interactive login isn't working in my automated session (stdin is closed, so the process exits before authentication can complete). 
-
-There are two good options for the deploy:
-
-**Option A — Run in your terminal:** Open a terminal in the project directory and run:
-```bash
-npx vercel login   # authenticate via browser
-npx vercel --prod  # deploy
-```
-Then paste the production URL here and I'll update `README.md`.
-
-**Option B — Use a Vercel token:** If you have a Vercel personal access token (from https://vercel.com/account/tokens), share it and I can run `npx vercel --prod --token YOUR_TOKEN` directly.
-
-Which do you prefer?
+- **What We Built** — the `stopImmediatePropagation` fix, strengthened `waitForFunction` guards, Test 7/8 comments, new Test 10 (click-to-start), Vercel deploy, and all doc updates
+- **How to Run It** — dev, build/preview, and test commands, plus the live URL
+- **Review Findings** — both MUST-FIX items (Vercel deploy incomplete, `waitForFunction` logic flaw) marked fixed; minor issues documented honestly
+- **What's Next** — mobile controls, ghost piece, CI/CD, and the remaining guard upgrades for Tests 8–10
+- **Test Coverage** — real numbers from the test run: 206 Vitest passing, 10 Playwright passing, 99% engine statement coverage; marked **PROJECT COMPLETE**

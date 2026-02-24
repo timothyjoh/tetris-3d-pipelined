@@ -17,7 +17,7 @@ grid overlay, and bloom post-processing.
 
 ## Live Demo
 
-[Production URL — to be added after Vercel deploy]
+[https://sdk-test-lemon.vercel.app](https://sdk-test-lemon.vercel.app)
 
 ## Getting Started
 
