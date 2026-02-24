@@ -20,6 +20,8 @@ npm run dev          # Vite dev server at localhost:5173
 npm run test         # Run all Vitest unit tests
 npm run test:coverage  # Coverage report in coverage/ (engine target ≥ 80%)
 npm run test:e2e     # Playwright E2E tests (requires npm run build first; runs headless Chromium)
+                     # VITE_TEST_HOOKS=true is set automatically via playwright.config.ts webServer.env
+                     # Stop any running preview server first — E2E always rebuilds with the flag baked in
 ```
 
 ## Build
@@ -120,8 +122,9 @@ if (gameState.justLocked) gameState.justLocked = false;
 const next = stepSpring(gameState.tiltAngle, gameState.tiltVelocity, tiltTarget);
 gameState.tiltAngle = next.angle;
 gameState.tiltVelocity = next.velocity;
-boardGroup.rotation.z = THREE.MathUtils.degToRad(gameState.tiltAngle);
+boardGroup.rotation.y = THREE.MathUtils.degToRad(-gameState.tiltAngle);
 ```
+Y-axis rotation (negative sign: left piece → positive tiltAngle → left edge toward viewer). Updated in Phase 4.
 
 Pure tilt math functions (no Three.js, testable in Node):
 - `computeTiltAngle(col)` — `src/engine/tilt.js`: clamps `(col - 4.5) / 4.5 * 7` to `[-7, 7]` degrees
@@ -172,4 +175,4 @@ On line clear, `_lockPiece()` enters sweep mode instead of immediately clearing 
 - Board background plane (`createBoardBackground(boardGroup)`)
 - Block pool meshes (`new BlockPool(boardGroup, 220)`)
 
-`boardGroup.rotation.z` is set each frame to the tilt angle in radians. Tilt is purely visual — game logic coordinates are unaffected.
+`boardGroup.rotation.y` is set each frame to the tilt angle in radians (negated). Tilt is purely visual — game logic coordinates are unaffected.

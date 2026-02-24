@@ -98,6 +98,14 @@ Video artifacts are written to `test-results/` (gitignored).
 
 ---
 
+## Phase 6 Conventions
+
+- **Start screen**: On page load, `#start-overlay` is shown. The game loop (`requestAnimationFrame`) does NOT start until the overlay is dismissed by any keydown or click. When writing tests that need the game loop running, dismiss the start screen first.
+- **`window.__gameState` gate**: Set only when `import.meta.env.VITE_TEST_HOOKS === 'true'` or `import.meta.env.DEV`. In E2E tests, `playwright.config.ts` passes `VITE_TEST_HOOKS=true` via `webServer.env` — no manual env var needed when running `npm run test:e2e`.
+- **Pause state**: `gameState.paused` is toggled by ESC (and by `KeyP` from `setupInput`). The `#pause-overlay` element shows when paused; any key resumes.
+
+---
+
 ## Customizing the Pipeline
 
 See `.pipeline/CLAUDE.md` for full configuration docs — how to edit workflow steps, change agents/models, customize prompts, and add new steps.

@@ -32,6 +32,7 @@ npm run dev     # open localhost:5173
 | ↓ | Soft drop |
 | Space | Hard drop |
 | P | Pause |
+| Escape | Pause / Resume |
 | Enter or R | Restart (game over screen only) |
 
 ## Scripts
@@ -54,6 +55,9 @@ npm run test:e2e    # run all E2E tests (headless Chromium)
 ```
 
 Video recordings of each test run are saved to `test-results/` (excluded from git).
+
+The `VITE_TEST_HOOKS=true` environment variable is set automatically by `playwright.config.ts`
+via `webServer.env` — no manual configuration needed.
 
 To open the HTML report after a run:
 

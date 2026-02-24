@@ -29,10 +29,15 @@ createBoardBackground(boardGroup);
 const composer = createComposer(renderer, scene, camera);
 const boardRenderer = new BoardRenderer(boardGroup);
 
+const startOverlay = document.getElementById('start-overlay');
+const pauseOverlay = document.getElementById('pause-overlay');
+
 let gameState = new GameState();
-// Test hook: exposed unconditionally so Playwright E2E tests can inject board state.
-// Phase 6 should gate this behind a build flag (e.g. import.meta.env.VITE_TEST_HOOKS).
-window.__gameState = gameState;
+// Test hook: gated behind VITE_TEST_HOOKS=true (set in playwright.config.ts webServer.env)
+// or DEV mode. Never set in a standard production build.
+if (import.meta.env.VITE_TEST_HOOKS === 'true' || import.meta.env.DEV) {
+  window.__gameState = gameState;
+}
 
 // Shared AudioContext (created once; browsers require user gesture to start)
 let audioCtx = null;
@@ -85,6 +90,41 @@ function handleRestart() {
   gameState.restart();
   hideOverlay();
 }
+
+let gameStarted = false;
+
+function startGame() {
+  if (gameStarted) return;
+  gameStarted = true;
+  startOverlay.classList.add('hidden');
+  requestAnimationFrame(loop);
+}
+
+// State-machine keydown handler — registered BEFORE setupInput so start-screen and
+// pause transitions run before game-control keys are processed.
+// Phase order: start → playing → (paused ↔ playing) → over
+window.addEventListener('keydown', (e) => {
+  if (!gameStarted) {
+    // Any key dismisses start screen and begins the game loop.
+    // Return immediately so this keydown doesn't also trigger pause logic.
+    startGame();
+    return;
+  }
+  if (gameState.over) return; // game-over: Enter/R handled by setupInput
+  if (gameState.paused) {
+    // Any key resumes
+    gameState.togglePause();
+    pauseOverlay.classList.add('hidden');
+    return;
+  }
+  if (e.code === 'Escape') {
+    // ESC pauses during active play
+    gameState.togglePause();
+    pauseOverlay.classList.remove('hidden');
+  }
+});
+
+startOverlay.addEventListener('click', startGame);
 
 setupInput(gameState, handleRestart, { suppressRestart: () => initialsActive });
 window.addEventListener('keydown', handleInitialsKey);
@@ -143,4 +183,4 @@ function loop(ts) {
   requestAnimationFrame(loop);
 }
 
-requestAnimationFrame(loop);
+// Game loop deferred — startGame() is called when the start overlay is dismissed.

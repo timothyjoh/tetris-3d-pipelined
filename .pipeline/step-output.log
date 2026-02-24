@@ -1,17 +1,14 @@
-Now let me run the tests to get actual results.
-All tests pass. Now I'll append the Phase 5 section to STATUS.md.
-Now append the Phase 5 section at the end of the file.
-STATUS.md has been updated. Here's a summary of what was written for Phase 5:
+Now let me run the tests to get real numbers:
+All tests pass. Now I have everything I need to write the Phase 6 section. Let me append it to STATUS.md:
+Now append the Phase 6 section:
+STATUS.md updated. Here's what was written:
 
-**Phase 5: Playwright E2E Testing & Gameplay Video Recording**
+**Phase 6 section added to STATUS.md** covering:
 
-- **What was built:** Playwright installed with Chromium, `playwright.config.ts` (headless, video on, retries 1, HTML reporter, webServer), `window.__gameState` test hook in `main.js`, 5 E2E tests in `tests/gameplay.spec.ts`, `.gitignore`, and `test:e2e`/`test:e2e:ui` npm scripts. Key discovery: `--use-gl=angle` is required for WebGL to work in headless Chromium (SwiftShader fails otherwise).
+- **What We Built** — all 9 concrete deliverables: start overlay, click/keypress to start, ESC pause, any-key resume, game-over ESC guard, two-overlay architecture, state-machine keydown handler, `VITE_TEST_HOOKS` build flag, and `reuseExistingServer: false` fix
+- **How to Run It** — updated commands including the E2E rebuild behavior
+- **Review Findings** — 3 MUST-FIX items (all fixed: `reuseExistingServer` footgun, Test 2 stale comment, missing Test 9 for R6) plus 3 deferred issues reported honestly
+- **What's Next** — Vercel smoke test, `stopImmediatePropagation`, and other deferred items
+- **Test Coverage** — real numbers from actual test runs: **206 Vitest tests passing**, **9 Playwright E2E tests passing** (5.6s), with per-test descriptions for all 9 E2E scenarios and the full engine coverage table
 
-- **Actual test results (just run):**
-  - Vitest: **206 tests passing, 0 failing** (12 files, unchanged from Phase 4)
-  - Playwright: **5 tests passing, 0 failing** (4.3s)
-  - Build: clean, no warnings
-
-- **Honest review findings documented:** 4 deferred code-quality issues noted (redundant `BASE` constant, stale RAF comment, weak Test 2 assertion, imprecise Test 3 `not.toHaveText` assertion) — all carried forward to Phase 6 pre-work.
-
-- **Overview and "Last updated" header** updated to reflect Phase 5 as the current state.
+The Overview "Current state" was also updated to reflect the complete, feature-finished product.

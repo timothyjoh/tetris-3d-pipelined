@@ -77,6 +77,38 @@
     }
     #restart-btn:hover { background: #00ffff22; }
 
+    /* Start screen overlay */
+    #start-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      background: rgba(0, 0, 0, 0.90);
+      color: #00ffff;
+      text-shadow: 0 0 12px #00ffff;
+    }
+    #start-overlay.hidden { display: none; }
+    #start-title { font-size: 48px; letter-spacing: 0.2em; }
+    #start-prompt { font-size: 16px; letter-spacing: 0.15em; opacity: 0.75; }
+
+    /* Pause overlay */
+    #pause-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.82);
+      color: #00ffff;
+      text-shadow: 0 0 12px #00ffff;
+    }
+    #pause-overlay.hidden { display: none; }
+    #pause-title { font-size: 48px; letter-spacing: 0.2em; }
+
     /* Initials entry */
     #initials-prompt { display: flex; flex-direction: column; align-items: center; gap: 12px; }
     .initials-row { display: flex; gap: 12px; }
@@ -123,11 +155,22 @@
       background: #00ffff18;
     }
   </style>
-  <script type="module" crossorigin src="/assets/index-Cum7cmue.js"></script>
+  <script type="module" crossorigin src="/assets/index-Bo24MBPi.js"></script>
 </head>
 <body>
   <div id="app">
     <canvas id="game-canvas"></canvas>
+    <!-- Start screen overlay: visible on page load; dismissed by any key or click. -->
+    <!-- Separate from #overlay (game-over) to avoid hiding game-over children. -->
+    <div id="start-overlay">
+      <div id="start-title">TRON TETRIS</div>
+      <div id="start-prompt">PRESS ANY KEY OR CLICK TO START</div>
+    </div>
+    <!-- Pause overlay: shown on ESC during active play; hidden on any key resume. -->
+    <!-- Separate from #overlay (game-over) to avoid interfering with game-over UI. -->
+    <div id="pause-overlay" class="hidden">
+      <div id="pause-title">PAUSED</div>
+    </div>
     <div id="hud">
       <div class="hud-panel">
         <div class="hud-label">SCORE</div>
