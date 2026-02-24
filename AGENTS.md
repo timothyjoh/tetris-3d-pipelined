@@ -19,6 +19,7 @@ npm run dev          # Vite dev server at localhost:5173
 ```
 npm run test         # Run all Vitest unit tests
 npm run test:coverage  # Coverage report in coverage/ (engine target ≥ 80%)
+npm run test:e2e     # Playwright E2E tests (requires npm run build first; runs headless Chromium)
 ```
 
 ## Build
@@ -62,7 +63,7 @@ src/
 - ES Modules only (no CommonJS require)
 - Node ≥ 18
 - Three.js addons via `three/addons/` (not a separate postprocessing package)
-- No E2E tests; unit tests cover engine only (renderer requires WebGL context)
+- Playwright E2E tests in `tests/gameplay.spec.ts` (run against production preview build); unit tests cover engine only (renderer requires WebGL context)
 - GameState constructor accepts `{firstPiece, secondPiece}` for deterministic testing
 
 ## Phase 3 Additions

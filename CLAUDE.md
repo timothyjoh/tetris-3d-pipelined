@@ -84,6 +84,20 @@ The pipeline stops automatically when the project is complete (`PROJECT COMPLETE
 
 ---
 
+## E2E Tests (Playwright)
+
+Run against the production preview build (must build first):
+
+```bash
+npm run build        # required before e2e tests
+npm run test:e2e     # headless Chromium, video recording on
+npm run test:e2e:ui  # Playwright UI mode (manual verification)
+```
+
+Video artifacts are written to `test-results/` (gitignored).
+
+---
+
 ## Customizing the Pipeline
 
 See `.pipeline/CLAUDE.md` for full configuration docs — how to edit workflow steps, change agents/models, customize prompts, and add new steps.

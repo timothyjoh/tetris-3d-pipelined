@@ -1,18 +1,17 @@
-Now let me read the Phase 4 docs and run the tests in parallel.
-Let me also get the coverage report for accurate numbers.
-Now I have everything I need. Let me write the updated STATUS.md.
-Now append the Phase 4 section to the end of the file.
-Let me do a quick sanity check on the final file.
-`STATUS.md` updated. Here's a summary of what was written:
+Now let me run the tests to get actual results.
+All tests pass. Now I'll append the Phase 5 section to STATUS.md.
+Now append the Phase 5 section at the end of the file.
+STATUS.md has been updated. Here's a summary of what was written for Phase 5:
 
-**Header changes:**
-- Bumped "Last updated after Phase 3" → Phase 4
-- Updated "Current state" to reflect the 3D visual upgrade and the fixed Enter-key leaderboard flow
+**Phase 5: Playwright E2E Testing & Gameplay Video Recording**
 
-**Phase 4 section added** covering:
+- **What was built:** Playwright installed with Chromium, `playwright.config.ts` (headless, video on, retries 1, HTML reporter, webServer), `window.__gameState` test hook in `main.js`, 5 E2E tests in `tests/gameplay.spec.ts`, `.gitignore`, and `test:e2e`/`test:e2e:ui` npm scripts. Key discovery: `--use-gl=angle` is required for WebGL to work in headless Chromium (SwiftShader fails otherwise).
 
-- **What We Built** — Enter-key race fix, PerspectiveCamera (Z=26, FOV 50°), BoxGeometry(0.85, 0.85, 0.85) cubes, DirectionalLight + roughness 0.4, Y-axis tilt with negated angle, grid/background compatibility verification, `initials-submit.test.js`, and CLAUDE.md docs
-- **How to Run It** — same as prior phases; callout for what's new visually and the fixed leaderboard UX
-- **Review Findings** — camera Z spec/plan discrepancy, false-positive test 4 deletion, race condition analysis, no `rotation.z` residual issue
-- **What's Next** — Phase 5 Playwright e2e, Phase 6 start/pause/resume, remaining known debt
-- **Test Coverage** — 206 passing / 0 failing across 12 files, 99% engine statement coverage (verified by actually running `npm run test:coverage`)
+- **Actual test results (just run):**
+  - Vitest: **206 tests passing, 0 failing** (12 files, unchanged from Phase 4)
+  - Playwright: **5 tests passing, 0 failing** (4.3s)
+  - Build: clean, no warnings
+
+- **Honest review findings documented:** 4 deferred code-quality issues noted (redundant `BASE` constant, stale RAF comment, weak Test 2 assertion, imprecise Test 3 `not.toHaveText` assertion) — all carried forward to Phase 6 pre-work.
+
+- **Overview and "Last updated" header** updated to reflect Phase 5 as the current state.

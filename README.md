@@ -44,6 +44,23 @@ npm run dev     # open localhost:5173
 | `npm run test` | Run Vitest unit tests |
 | `npm run test:coverage` | Generate coverage report in `coverage/` |
 
+## E2E Tests
+
+End-to-end tests run against the Vite production preview server using Playwright.
+
+```bash
+npm run build       # build production bundle first
+npm run test:e2e    # run all E2E tests (headless Chromium)
+```
+
+Video recordings of each test run are saved to `test-results/` (excluded from git).
+
+To open the HTML report after a run:
+
+```bash
+npx playwright show-report
+```
+
 ## Deploy
 
 The project is deployed to Vercel as a standard Vite static build. No `vercel.json` is needed — Vercel auto-configures for Vite projects. Connect the GitHub repo to Vercel with build command `npm run build` and output directory `dist`. See [AGENTS.md](./AGENTS.md) for full details.

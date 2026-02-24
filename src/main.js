@@ -30,6 +30,9 @@ const composer = createComposer(renderer, scene, camera);
 const boardRenderer = new BoardRenderer(boardGroup);
 
 let gameState = new GameState();
+// Test hook: exposed unconditionally so Playwright E2E tests can inject board state.
+// Phase 6 should gate this behind a build flag (e.g. import.meta.env.VITE_TEST_HOOKS).
+window.__gameState = gameState;
 
 // Shared AudioContext (created once; browsers require user gesture to start)
 let audioCtx = null;

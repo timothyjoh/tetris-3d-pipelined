@@ -1,0 +1,12 @@
+# Playwright E2E artifacts
+test-results/
+playwright-report/
+
+# Build output
+dist/
+
+# Dependencies
+node_modules/
+
+# Test coverage
+coverage/
