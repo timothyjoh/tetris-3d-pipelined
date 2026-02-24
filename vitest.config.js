@@ -5,6 +5,7 @@ export default defineConfig({
     environmentMatchGlobs: [
       ['src/__tests__/input.test.js', 'jsdom'],
       ['src/__tests__/leaderboard-storage.test.js', 'jsdom'],
+      ['src/__tests__/initials-submit.test.js', 'jsdom'],
     ],
     include: ['src/__tests__/**/*.test.js'],
     coverage: {

@@ -1,15 +1,18 @@
-Now let me run the tests to get real numbers:
-I have all the data I need. Let me write the Phase 3 section to STATUS.md:
-Now append the Phase 3 section:
-Let me do a quick sanity check on the final file:
-`STATUS.md` is updated. Here's a summary of what was written:
+Now let me read the Phase 4 docs and run the tests in parallel.
+Let me also get the coverage report for accurate numbers.
+Now I have everything I need. Let me write the updated STATUS.md.
+Now append the Phase 4 section to the end of the file.
+Let me do a quick sanity check on the final file.
+`STATUS.md` updated. Here's a summary of what was written:
 
-**Phase 3 section covers:**
+**Header changes:**
+- Bumped "Last updated after Phase 3" → Phase 4
+- Updated "Current state" to reflect the 3D visual upgrade and the fixed Enter-key leaderboard flow
 
-- **What We Built** — tilt center-column fix (±7° restored), left-to-right sweep fix, leaderboard engine (`isTopTen`/`insertScore`/`rankEntries`/`loadLeaderboard`/`saveLeaderboard`), initials entry UI (3 chars, arcade style), game-over overlay redesign with ranked table and highlight, jsdom test setup for `input.test.js`, localStorage wrapper tests, Vercel deploy readiness, and docs updates.
+**Phase 4 section added** covering:
 
-- **Review Findings** — Honest about the critical Enter-key race condition (leaderboard confirmation is never visible to the user), plus the four minor issues (XSS risk in `showLeaderboard`, fragile listener accumulation in tests, `isTopTen` sorted-input assumption, duplicate test case). All noted as unfixed.
-
-- **Test Coverage** — Real numbers from `npm run test:coverage`: **203 tests passing, 0 failing**, **99% line coverage** across all engine modules. The previously 0%-covered `leaderboard.js` localStorage wrappers are now at 100% via the new `leaderboard-storage.test.js`.
-
-- **Overview and Current State** updated to reflect Phase 3 capabilities while being honest about the known UX bug.
+- **What We Built** — Enter-key race fix, PerspectiveCamera (Z=26, FOV 50°), BoxGeometry(0.85, 0.85, 0.85) cubes, DirectionalLight + roughness 0.4, Y-axis tilt with negated angle, grid/background compatibility verification, `initials-submit.test.js`, and CLAUDE.md docs
+- **How to Run It** — same as prior phases; callout for what's new visually and the fixed leaderboard UX
+- **Review Findings** — camera Z spec/plan discrepancy, false-positive test 4 deletion, race condition analysis, no `rotation.z` residual issue
+- **What's Next** — Phase 5 Playwright e2e, Phase 6 start/pause/resume, remaining known debt
+- **Test Coverage** — 206 passing / 0 failing across 12 files, 99% engine statement coverage (verified by actually running `npm run test:coverage`)

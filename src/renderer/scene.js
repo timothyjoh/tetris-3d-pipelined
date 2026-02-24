@@ -10,6 +10,10 @@ export function createScene(canvas) {
   const scene = new THREE.Scene();
   scene.add(new THREE.AmbientLight(0xffffff, 0.3));
 
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  dirLight.position.set(5, 10, 10);
+  scene.add(dirLight);
+
   const camera = buildCamera(canvas);
 
   window.addEventListener('resize', () => {
@@ -22,24 +26,12 @@ export function createScene(canvas) {
 
 function buildCamera(canvas) {
   const aspect = canvas.clientWidth / canvas.clientHeight;
-  const vHeight = BOARD_ROWS + 4;
-  const vWidth = vHeight * aspect;
-  const camera = new THREE.OrthographicCamera(
-    -vWidth / 2, vWidth / 2,
-    vHeight / 2, -vHeight / 2,
-    0.1, 100
-  );
-  camera.position.z = 10;
+  const camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 100);
+  camera.position.z = 26;
   return camera;
 }
 
 function updateCamera(camera, canvas) {
-  const aspect = canvas.clientWidth / canvas.clientHeight;
-  const vHeight = BOARD_ROWS + 4;
-  const vWidth = vHeight * aspect;
-  camera.left   = -vWidth / 2;
-  camera.right  =  vWidth / 2;
-  camera.top    =  vHeight / 2;
-  camera.bottom = -vHeight / 2;
+  camera.aspect = canvas.clientWidth / canvas.clientHeight;
   camera.updateProjectionMatrix();
 }

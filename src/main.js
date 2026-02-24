@@ -76,8 +76,6 @@ function handleInitialsKey(e) {
   }
 }
 
-window.addEventListener('keydown', handleInitialsKey);
-
 function handleRestart() {
   initialsActive = false;
   initialsChars = [];
@@ -86,6 +84,7 @@ function handleRestart() {
 }
 
 setupInput(gameState, handleRestart, { suppressRestart: () => initialsActive });
+window.addEventListener('keydown', handleInitialsKey);
 
 document.getElementById('restart-btn').addEventListener('click', handleRestart);
 
@@ -110,7 +109,7 @@ function loop(ts) {
   const next = stepSpring(gameState.tiltAngle, gameState.tiltVelocity, tiltTarget);
   gameState.tiltAngle = next.angle;
   gameState.tiltVelocity = next.velocity;
-  boardGroup.rotation.z = THREE.MathUtils.degToRad(gameState.tiltAngle);
+  boardGroup.rotation.y = THREE.MathUtils.degToRad(-gameState.tiltAngle);
 
   // --- Sound events ---
   if (gameState.soundEvents.length > 0) {

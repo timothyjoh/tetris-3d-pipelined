@@ -73,6 +73,17 @@ Phase outputs are saved to `docs/phases/phase-N/`.
 
 The pipeline stops automatically when the project is complete (`PROJECT COMPLETE` in REFLECTIONS.md).
 
+## Rendering (as of Phase 4)
+
+- **Camera**: `PerspectiveCamera` (FOV 50°, Z = 26). `OrthographicCamera` has been removed.
+- **Board tilt**: `boardGroup.rotation.y` drives tilt (not `.rotation.z`). Positive Y = left edge toward viewer.
+  - Formula: `boardGroup.rotation.y = THREE.MathUtils.degToRad(-gameState.tiltAngle)`
+  - `tilt.js` engine functions (`computeTiltAngle`, `stepSpring`) are unchanged.
+- **Block geometry**: `BoxGeometry(0.85, 0.85, 0.85)` cubes, centered at Z = 0.425.
+- **Lighting**: `AmbientLight(0xffffff, 0.3)` + `DirectionalLight(0xffffff, 1.0)` from front-top-right (5, 10, 10).
+
+---
+
 ## Customizing the Pipeline
 
 See `.pipeline/CLAUDE.md` for full configuration docs — how to edit workflow steps, change agents/models, customize prompts, and add new steps.
