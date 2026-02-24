@@ -105,6 +105,23 @@ Connect the GitHub repository to Vercel; set build command `npm run build`, outp
 
 The `jsdom` package (installed as devDependency) is used via Vitest's built-in jsdom environment, configured via `environmentMatchGlobs` in `vitest.config.js`. The `@vitest/environment-jsdom` package is NOT needed — Vitest v2 uses `jsdom` directly.
 
+## State-Machine Keydown Handler Discipline
+
+Any state-machine `keydown` handler registered on `window` that intercepts a key and returns early (consuming the event) MUST call `e.stopImmediatePropagation()` immediately after the consuming action. This prevents the same event from reaching listeners registered later on `window` (e.g., `setupInput`'s `onKeydown`).
+
+**Pattern** (from `src/main.js`):
+```js
+if (!gameStarted) {
+  startGame();
+  e.stopImmediatePropagation(); // ← required: prevents P→togglePause, Space→hardDrop
+  return;
+}
+```
+
+**Why**: All `keydown` listeners are on `window`. The state-machine handler is registered first (before `setupInput`). Without `stopImmediatePropagation`, a key pressed to dismiss an overlay also fires any matching `setupInput` binding — creating invisible state bugs (e.g., game starts but is immediately paused).
+
+**Exception**: Non-consuming branches (guard returns that do nothing, like `if (gameState.over) return`) must NOT call `stopImmediatePropagation`, so downstream handlers (Enter/R for restart) still receive the event.
+
 ## Phase 2 Additions
 
 ### AnimationState / Tilt Contract

@@ -7,13 +7,17 @@ grid overlay, and bloom post-processing.
 ## Features
 
 - **Tron aesthetic** — dark background, neon block colors, UnrealBloom post-processing
-- **Board tilt effect** — board Z-rotates up to ±7° tracking the active piece center column; spring/damping animation snaps back to 0° on piece lock
+- **Board tilt effect** — board Y-rotates up to ±7° tracking the active piece center column; spring/damping animation snaps back to 0° on piece lock
 - **Ghost piece** — dim neon outline shows where the active piece will land
 - **Piece lock flash** — ~100ms white flash on cells when a piece locks
 - **Line-clear sweep animation** — 150ms left-to-right column wipe across cleared rows before they disappear
 - **Web Audio sound effects** — 8 synthesized tones (move, rotate, soft drop, hard drop, line clear, Tetris, level up, game over); no audio files fetched from network
 - **Keyboard restart** — press Enter or R on the game-over screen to restart without mouse
 - **Local leaderboard** — top 10 scores stored in `localStorage`; arcade-style 3-character initials entry (A–Z, 0–9) when score qualifies for the top 10
+
+## Live Demo
+
+[Production URL — to be added after Vercel deploy]
 
 ## Getting Started
 

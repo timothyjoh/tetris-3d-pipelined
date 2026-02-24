@@ -106,21 +106,27 @@ function startGame() {
 window.addEventListener('keydown', (e) => {
   if (!gameStarted) {
     // Any key dismisses start screen and begins the game loop.
-    // Return immediately so this keydown doesn't also trigger pause logic.
+    // stopImmediatePropagation prevents this key from also reaching setupInput
+    // (e.g. P would otherwise call togglePause(), Space would call hardDrop()).
     startGame();
+    e.stopImmediatePropagation();
     return;
   }
-  if (gameState.over) return; // game-over: Enter/R handled by setupInput
+  if (gameState.over) return; // game-over: Enter/R handled by setupInput (no stopImmediatePropagation)
   if (gameState.paused) {
-    // Any key resumes
+    // Any key resumes; stop propagation so the same key doesn't also
+    // trigger a game-control action (e.g. Space would call hardDrop()).
     gameState.togglePause();
     pauseOverlay.classList.add('hidden');
+    e.stopImmediatePropagation();
     return;
   }
   if (e.code === 'Escape') {
-    // ESC pauses during active play
+    // ESC pauses during active play; stop propagation (ESC has no setupInput binding,
+    // but the discipline is: consuming branches always call stopImmediatePropagation).
     gameState.togglePause();
     pauseOverlay.classList.remove('hidden');
+    e.stopImmediatePropagation();
   }
 });
 

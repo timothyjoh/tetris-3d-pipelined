@@ -41,8 +41,12 @@ test('line clear increases score above zero', async ({ page }) => {
   await page.goto('/');
   // Dismiss start overlay to start the game loop (ArrowLeft is harmless: no hard drop)
   await page.keyboard.press('ArrowLeft');
-  // window.__gameState is set synchronously at module evaluation (VITE_TEST_HOOKS=true in webServer.env)
-  await page.waitForFunction(() => (window as any).__gameState !== undefined);
+  // Wait until __gameState exists AND pieceType is non-null: confirms module loaded and piece spawned
+  // (VITE_TEST_HOOKS=true is set in playwright.config.ts webServer.env)
+  await page.waitForFunction(() => {
+    const gs = (window as any).__gameState;
+    return gs != null && gs.pieceType !== null;
+  });
 
   await page.evaluate(() => {
     const gs = (window as any).__gameState;
@@ -76,8 +80,12 @@ test('game-over overlay becomes visible after topping out', async ({ page }) => 
   await page.goto('/');
   // Dismiss start overlay to start the game loop (ArrowLeft is harmless: no hard drop)
   await page.keyboard.press('ArrowLeft');
-  // window.__gameState is set synchronously at module evaluation (VITE_TEST_HOOKS=true in webServer.env)
-  await page.waitForFunction(() => (window as any).__gameState !== undefined);
+  // Wait until __gameState exists AND pieceType is non-null: confirms module loaded and piece spawned
+  // (VITE_TEST_HOOKS=true is set in playwright.config.ts webServer.env)
+  await page.waitForFunction(() => {
+    const gs = (window as any).__gameState;
+    return gs != null && gs.pieceType !== null;
+  });
 
   await page.evaluate(() => {
     const gs = (window as any).__gameState;
@@ -112,8 +120,12 @@ test('submitting initials shows leaderboard row with entered initials', async ({
   await page.goto('/');
   // Dismiss start overlay to start the game loop (ArrowLeft is harmless: no hard drop)
   await page.keyboard.press('ArrowLeft');
-  // window.__gameState is set synchronously at module evaluation (VITE_TEST_HOOKS=true in webServer.env)
-  await page.waitForFunction(() => (window as any).__gameState !== undefined);
+  // Wait until __gameState exists AND pieceType is non-null: confirms module loaded and piece spawned
+  // (VITE_TEST_HOOKS=true is set in playwright.config.ts webServer.env)
+  await page.waitForFunction(() => {
+    const gs = (window as any).__gameState;
+    return gs != null && gs.pieceType !== null;
+  });
 
   // Trigger game over (same injection as Test 4)
   await page.evaluate(() => {
@@ -159,6 +171,8 @@ test('start overlay is visible on load', async ({ page }) => {
 // ──────────────────────────────────────────────────────────────────────────────
 // Test 7: Game starts after keypress on start screen
 // Pressing Space dismisses the start overlay and begins the game loop.
+// The state-machine handler calls e.stopImmediatePropagation() after startGame(),
+// so Space does NOT also trigger hardDrop() via setupInput. Key choice is safe.
 // ──────────────────────────────────────────────────────────────────────────────
 test('game starts after keypress on start screen', async ({ page }) => {
   await page.goto('/');
@@ -190,7 +204,8 @@ test('ESC pauses and any key resumes', async ({ page }) => {
   const pausedTrue = await page.evaluate(() => (window as any).__gameState.paused);
   expect(pausedTrue).toBe(true);
 
-  // Any key resumes
+  // Any key resumes — state-machine handler calls stopImmediatePropagation() in the
+  // pause-resume branch, so Space does NOT also reach setupInput's hardDrop().
   await page.keyboard.press('Space');
   await expect(page.locator('#pause-overlay')).toBeHidden();
   const pausedFalse = await page.evaluate(() => (window as any).__gameState.paused);
@@ -201,6 +216,7 @@ test('ESC pauses and any key resumes', async ({ page }) => {
 // Test 9: ESC during game-over does NOT show the pause overlay
 // After game-over, pressing Escape must be a no-op (guard in main.js + togglePause).
 // ──────────────────────────────────────────────────────────────────────────────
+
 test('ESC during game-over does not show pause overlay', async ({ page }) => {
   await page.goto('/');
   // Dismiss start overlay to start the game loop (ArrowLeft is harmless: no hard drop)
@@ -235,4 +251,25 @@ test('ESC during game-over does not show pause overlay', async ({ page }) => {
   // paused flag must remain false (togglePause returns early when over)
   const isPaused = await page.evaluate(() => (window as any).__gameState.paused);
   expect(isPaused).toBe(false);
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Test 10: Click on start overlay starts the game
+// The #start-overlay element has a click listener → startGame(). Clicking it
+// should hide the overlay and start the game loop (gameState.over === false).
+// ──────────────────────────────────────────────────────────────────────────────
+test('click on start overlay starts the game', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#start-overlay')).toBeVisible();
+
+  await page.click('#start-overlay');
+
+  await expect(page.locator('#start-overlay')).toBeHidden();
+  // Confirm the game loop is live and not in a game-over state
+  await page.waitForFunction(() => {
+    const gs = (window as any).__gameState;
+    return gs !== undefined && gs.over === false;
+  });
+  const isOver = await page.evaluate(() => (window as any).__gameState.over);
+  expect(isOver).toBe(false);
 });
