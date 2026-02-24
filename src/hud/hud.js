@@ -11,11 +11,18 @@ const overlayScore = document.getElementById('overlay-score');
 const nextCtx = nextCanvas.getContext('2d');
 const CELL = nextCanvas.width / 6;
 
+const muteBtn = document.getElementById('mute-btn');
+
+export function updateMuteIndicator(muted) {
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+}
+
 export function updateHud(gameState) {
   elScore.textContent = gameState.score.toLocaleString();
   elLevel.textContent = gameState.level;
   elLines.textContent = gameState.linesCleared;
   renderNextPiece(gameState.nextPieceType);
+  updateMuteIndicator(gameState.muted);
 }
 
 function renderNextPiece(pieceType) {

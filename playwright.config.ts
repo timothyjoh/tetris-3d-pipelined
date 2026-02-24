@@ -9,6 +9,7 @@ export default defineConfig({
     headless: true,
     video: 'on',
     baseURL: 'http://localhost:4173',
+    hasTouch: true,
   },
   projects: [
     {

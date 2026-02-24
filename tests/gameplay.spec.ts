@@ -1,5 +1,16 @@
 import { test, expect } from '@playwright/test';
 
+// Shared guard: waits until the game module has loaded AND the first piece has spawned.
+// Use this instead of bare `__gameState !== undefined` checks.
+// Phase 8: extracted from inline waitForFunction calls in Tests 3–5 to a named helper
+// so future guard upgrades are a single-line change.
+async function waitForGameReady(page: any) {
+  await page.waitForFunction(() => {
+    const gs = (window as any).__gameState;
+    return gs != null && gs.pieceType !== null;
+  });
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Test 1: Canvas visible
 // Confirms Vite build + Three.js boot succeeds; score starts at "0".
@@ -43,10 +54,8 @@ test('line clear increases score above zero', async ({ page }) => {
   await page.keyboard.press('ArrowLeft');
   // Wait until __gameState exists AND pieceType is non-null: confirms module loaded and piece spawned
   // (VITE_TEST_HOOKS=true is set in playwright.config.ts webServer.env)
-  await page.waitForFunction(() => {
-    const gs = (window as any).__gameState;
-    return gs != null && gs.pieceType !== null;
-  });
+  // Phase 8: uses shared waitForGameReady helper (extracted from inline guard)
+  await waitForGameReady(page);
 
   await page.evaluate(() => {
     const gs = (window as any).__gameState;
@@ -82,10 +91,8 @@ test('game-over overlay becomes visible after topping out', async ({ page }) => 
   await page.keyboard.press('ArrowLeft');
   // Wait until __gameState exists AND pieceType is non-null: confirms module loaded and piece spawned
   // (VITE_TEST_HOOKS=true is set in playwright.config.ts webServer.env)
-  await page.waitForFunction(() => {
-    const gs = (window as any).__gameState;
-    return gs != null && gs.pieceType !== null;
-  });
+  // Phase 8: uses shared waitForGameReady helper (extracted from inline guard)
+  await waitForGameReady(page);
 
   await page.evaluate(() => {
     const gs = (window as any).__gameState;
@@ -122,10 +129,8 @@ test('submitting initials shows leaderboard row with entered initials', async ({
   await page.keyboard.press('ArrowLeft');
   // Wait until __gameState exists AND pieceType is non-null: confirms module loaded and piece spawned
   // (VITE_TEST_HOOKS=true is set in playwright.config.ts webServer.env)
-  await page.waitForFunction(() => {
-    const gs = (window as any).__gameState;
-    return gs != null && gs.pieceType !== null;
-  });
+  // Phase 8: uses shared waitForGameReady helper (extracted from inline guard)
+  await waitForGameReady(page);
 
   // Trigger game over (same injection as Test 4)
   await page.evaluate(() => {
@@ -196,7 +201,8 @@ test('ESC pauses and any key resumes', async ({ page }) => {
   await page.goto('/');
   // Dismiss start screen
   await page.keyboard.press('ArrowLeft');
-  await page.waitForFunction(() => (window as any).__gameState !== undefined);
+  // Phase 8: upgraded from stale `!== undefined` guard to rigorous two-condition form
+  await waitForGameReady(page);
 
   // ESC pauses
   await page.keyboard.press('Escape');
@@ -221,7 +227,8 @@ test('ESC during game-over does not show pause overlay', async ({ page }) => {
   await page.goto('/');
   // Dismiss start overlay to start the game loop (ArrowLeft is harmless: no hard drop)
   await page.keyboard.press('ArrowLeft');
-  await page.waitForFunction(() => (window as any).__gameState !== undefined);
+  // Phase 8: upgraded from stale `!== undefined` guard to rigorous two-condition form
+  await waitForGameReady(page);
 
   // Trigger game over using the same O-piece injection as Tests 4 and 5
   await page.evaluate(() => {
@@ -265,11 +272,119 @@ test('click on start overlay starts the game', async ({ page }) => {
   await page.click('#start-overlay');
 
   await expect(page.locator('#start-overlay')).toBeHidden();
-  // Confirm the game loop is live and not in a game-over state
-  await page.waitForFunction(() => {
-    const gs = (window as any).__gameState;
-    return gs !== undefined && gs.over === false;
-  });
+  // Confirm the game loop is live: module loaded AND first piece has spawned
+  // Phase 8: upgraded from partially-stale guard (`!== undefined && gs.over === false`)
+  // to rigorous two-condition form; the isOver assertion below still verifies over===false
+  await waitForGameReady(page);
   const isOver = await page.evaluate(() => (window as any).__gameState.over);
   expect(isOver).toBe(false);
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Test 11: Touch ← button moves piece left
+// Set viewport to 390×844 (iPhone 14 portrait) so CSS media query shows touch controls.
+// Tap the left arrow button; assert gameState.col decreased (or is bounded at wall).
+// ──────────────────────────────────────────────────────────────────────────────
+test('touch left button moves piece left', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.keyboard.press('ArrowLeft'); // dismiss start screen
+  await waitForGameReady(page);
+
+  // Move right twice to ensure piece is not against the left wall,
+  // so a successful touch-left will always decrease col by exactly 1.
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+
+  const colBefore = await page.evaluate(() => (window as any).__gameState.col);
+
+  const btn = page.locator('[data-action="left"]');
+  const box = await btn.boundingBox();
+  await page.touchscreen.tap(box!.x + box!.width / 2, box!.y + box!.height / 2);
+
+  const colAfter = await page.evaluate(() => (window as any).__gameState.col);
+  // Strict equality: touch-left must decrease col by exactly 1.
+  // Moving right twice before ensures the piece is not at the left wall.
+  expect(colAfter).toBe(colBefore - 1);
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Test 12: Touch rotate button rotates piece
+// Tap the rotate (↑) button; assert gameState.rotation changed from initial value.
+// Uses 390×844 viewport to show touch controls.
+// ──────────────────────────────────────────────────────────────────────────────
+test('touch rotate button rotates piece', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.keyboard.press('ArrowLeft'); // dismiss start screen
+  await waitForGameReady(page);
+
+  const rotBefore = await page.evaluate(() => (window as any).__gameState.rotation);
+
+  const btn = page.locator('[data-action="rotate"]');
+  const box = await btn.boundingBox();
+  await page.touchscreen.tap(box!.x + box!.width / 2, box!.y + box!.height / 2);
+
+  const rotAfter = await page.evaluate(() => (window as any).__gameState.rotation);
+  expect(rotAfter).not.toBe(rotBefore);
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Test 13: Touch hard drop button lands piece near bottom
+// Tap the hard drop (⬛) button; piece locks near bottom and a new piece spawns.
+// Verifies a cell exists at row 19 (the bottom-most row) after the drop.
+// Uses 390×844 viewport to show touch controls.
+// ──────────────────────────────────────────────────────────────────────────────
+test('touch hard drop button drops piece to bottom', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.keyboard.press('ArrowLeft'); // dismiss start screen
+  await waitForGameReady(page);
+
+  const btn = page.locator('[data-action="hardDrop"]');
+  const box = await btn.boundingBox();
+  await page.touchscreen.tap(box!.x + box!.width / 2, box!.y + box!.height / 2);
+
+  // After hard drop a new piece spawns; wait for the game to be ready again
+  await waitForGameReady(page);
+  // The previous piece locked near the bottom — board should have cells at row 19
+  const hasCellNearBottom = await page.evaluate(() => {
+    const gs = (window as any).__gameState;
+    for (let col = 0; col < 10; col++) {
+      if (gs.board.getCell(col, 19) !== 0) return true;
+    }
+    return false;
+  });
+  expect(hasCellNearBottom).toBe(true);
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Test 14: Mute button toggles mute flag and HUD icon
+// Click the mute button in the HUD; assert window.__gameState.muted toggles.
+// Also verifies the HUD icon changes between 🔊 and 🔇.
+// Uses 390×844 viewport; mute button is always visible in the HUD.
+// ──────────────────────────────────────────────────────────────────────────────
+test('mute button toggles mute flag and HUD icon', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.keyboard.press('ArrowLeft'); // dismiss start screen
+  await waitForGameReady(page);
+
+  const mutedBefore = await page.evaluate(() => (window as any).__gameState.muted);
+  expect(mutedBefore).toBe(false);
+
+  // Click the mute button to mute
+  await page.click('#mute-btn');
+
+  const mutedAfter = await page.evaluate(() => (window as any).__gameState.muted);
+  expect(mutedAfter).toBe(true);
+
+  // Verify HUD icon changed to muted
+  const icon = await page.locator('#mute-btn').textContent();
+  expect(icon).toBe('🔇');
+
+  // Click again to unmute
+  await page.click('#mute-btn');
+  const mutedFinal = await page.evaluate(() => (window as any).__gameState.muted);
+  expect(mutedFinal).toBe(false);
 });

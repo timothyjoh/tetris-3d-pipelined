@@ -193,3 +193,33 @@ On line clear, `_lockPiece()` enters sweep mode instead of immediately clearing 
 - Block pool meshes (`new BlockPool(boardGroup, 220)`)
 
 `boardGroup.rotation.y` is set each frame to the tilt angle in radians (negated). Tilt is purely visual — game logic coordinates are unaffected.
+
+## Phase 8 Additions
+
+### Touch Controls (`src/input-touch.js`)
+
+`setupTouchInput(container, gameState, isActive)` — event delegation on `#touch-controls` div.
+- `data-action` attribute on each button determines the dispatched action: `left`, `right`, `rotate`, `softDrop`, `hardDrop`.
+- `touchstart` handler uses `{ passive: false }` to allow `e.preventDefault()` (prevents page scroll).
+- Auto-repeat for left/right: 300 ms initial delay, then 80 ms interval via `setTimeout`/`setInterval`.
+- `touchend` and `touchcancel` both call `onTouchEnd` to stop soft-drop and clear repeat timers.
+- `isActive()` callback: `() => gameStarted && !gameState.paused && !gameState.over` — touch actions no-op when game isn't running.
+
+### `window.__gameState.muted` (Phase 8)
+
+`window.__gameState.muted` (boolean) is accessible under `VITE_TEST_HOOKS=true` or DEV mode
+via the existing `window.__gameState` hook. It reflects the current mute state. Toggle it via
+`#mute-btn` click or M key during active play. Use `page.evaluate(() => (window as any).__gameState.muted)`
+in E2E tests to assert mute state.
+
+### E2E Guard Pattern (`waitForGameReady`)
+
+All E2E tests that need the game loop running use the shared `waitForGameReady(page)` helper
+defined at the top of `tests/gameplay.spec.ts`. The rigorous two-condition guard:
+```ts
+await page.waitForFunction(() => {
+  const gs = (window as any).__gameState;
+  return gs != null && gs.pieceType !== null;
+});
+```
+Future guard changes are a single-line edit to the helper. Never use the stale `!== undefined` form.

@@ -23,6 +23,7 @@ export function setupInput(gameState, onRestart, options = {}) {
         gameState.hardDrop();
         break;
       case 'KeyP':                 gameState.togglePause();    break;
+      case 'KeyM':                 gameState.muted = !gameState.muted; break;
     }
   };
 

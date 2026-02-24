@@ -4,10 +4,11 @@ import { createScene } from './renderer/scene.js';
 import { createComposer, createGridLines, createBoardBackground } from './renderer/composer.js';
 import { BoardRenderer } from './renderer/render.js';
 import { setupInput } from './input.js';
+import { setupTouchInput } from './input-touch.js';
 import {
   updateHud, showOverlay, hideOverlay,
   showInitialsPrompt, setInitialChar, setInitialsCursor,
-  showLeaderboard,
+  showLeaderboard, updateMuteIndicator,
 } from './hud/hud.js';
 import { computeTiltAngle, stepSpring } from './engine/tilt.js';
 import { TETROMINOES } from './engine/tetrominoes.js';
@@ -135,6 +136,16 @@ startOverlay.addEventListener('click', startGame);
 setupInput(gameState, handleRestart, { suppressRestart: () => initialsActive });
 window.addEventListener('keydown', handleInitialsKey);
 
+document.getElementById('mute-btn').addEventListener('click', () => {
+  if (gameStarted && !gameState.paused) {
+    gameState.muted = !gameState.muted;
+    updateMuteIndicator(gameState.muted);
+  }
+});
+
+const touchControls = document.getElementById('touch-controls');
+setupTouchInput(touchControls, gameState, () => gameStarted && !gameState.paused && !gameState.over);
+
 document.getElementById('restart-btn').addEventListener('click', handleRestart);
 
 let lastTime = 0;
@@ -162,11 +173,13 @@ function loop(ts) {
 
   // --- Sound events ---
   if (gameState.soundEvents.length > 0) {
-    const ctx = getAudioCtx();
-    for (const event of gameState.soundEvents) {
-      playGameSound(event, ctx);
+    if (!gameState.muted) {
+      const ctx = getAudioCtx();
+      for (const event of gameState.soundEvents) {
+        playGameSound(event, ctx);
+      }
     }
-    gameState.soundEvents.length = 0;
+    gameState.soundEvents.length = 0; // always drain, even when muted
   }
 
   boardRenderer.draw(gameState);

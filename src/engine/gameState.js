@@ -27,6 +27,7 @@ export class GameState {
     this.linesCleared = 0;
     this.paused = false;
     this.over = false;
+    this.muted = false;
     this.softDrop = false;
 
     this.pieceType = null;

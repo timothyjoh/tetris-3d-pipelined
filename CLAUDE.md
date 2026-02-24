@@ -109,6 +109,25 @@ Video artifacts are written to `test-results/` (gitignored).
 - **`stopImmediatePropagation` in state-machine handler**: `src/main.js:106–125` now calls `e.stopImmediatePropagation()` in all three consuming branches (start-dismiss, pause-resume, ESC-pause). Future key bindings added to `setupInput` may safely overlap with start-screen/pause/resume keys — they will be blocked when an overlay is active and allowed through during normal play.
 - **`waitForFunction` guards**: E2E tests that need the game loop running use `window.__gameState?.pieceType !== null` (not `!== undefined`) to confirm the game loop has ticked at least once after dismissing the start overlay.
 
+## Phase 8 Additions
+
+### Touch Control Overlay Architecture
+- `#touch-controls` div in `index.html` — uses event delegation; a single `touchstart` listener
+  on the container reads `data-action` from the target button.
+- `src/input-touch.js` — exports `setupTouchInput(container, gameState, isActive)`.
+  Auto-repeat for ← / →: 300 ms initial delay, 80 ms interval (via `setTimeout`/`setInterval`).
+  `touchcancel` is handled identically to `touchend` to ensure soft-drop stops cleanly.
+- Visibility: CSS `@media (hover: none), (max-width: 768px)` — combined touch-capable and
+  narrow-viewport condition.
+
+### Mute Flag Location
+- `gameState.muted` (boolean, default `false`) — on the `GameState` class in `src/engine/gameState.js`.
+- Toggled by `KeyM` in `src/input.js` and by `#mute-btn` click in `src/main.js`.
+- Audio gating: `if (!gameState.muted)` wraps the sound dispatch loop in `src/main.js`.
+- HUD indicator: `updateMuteIndicator(muted)` in `src/hud/hud.js`, called from `updateHud`.
+- E2E accessible as `window.__gameState.muted` (existing hook, no new code).
+- Per R4: muted state persists across restarts within the session (`restart()` does not reset `muted`).
+
 ---
 
 ## Customizing the Pipeline

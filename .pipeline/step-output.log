@@ -1,14 +1,24 @@
-Now let me run the test suites to get real numbers.
-All tests pass — 206 Vitest, 10 Playwright. Now I'll update STATUS.md.
-Now append the Phase 7 section:
-Done. Here's what was written to `STATUS.md`:
+The STATUS.md already has Phase 8 content. Let me verify by checking the phase docs and running the actual tests to confirm the numbers are accurate.
+The Vitest numbers confirm 211 passing. Let me run the E2E tests to verify the Playwright count too.
+All tests pass. The STATUS.md is already accurate — it was written as part of the pipeline. Let me do a final verification that nothing needs updating:
 
-**Header updated:** "Last updated after Phase 7" and the overview's "Current state" paragraph updated to mention the live Vercel URL and 10 E2E tests (up from 9).
+**Actual test results:**
+- Vitest: **211 passing, 0 failing** (13 test files) — matches STATUS.md
+- Playwright: **14 passing, 0 failing** (6.7s) — matches STATUS.md (documented as 6.6s, negligible difference)
+- Build: **clean, no warnings** — matches STATUS.md
 
-**Phase 7 section added** covering:
+The STATUS.md was already correctly updated after Phase 8. Here's a summary of what it documents for Phase 8:
 
-- **What We Built** — the `stopImmediatePropagation` fix, strengthened `waitForFunction` guards, Test 7/8 comments, new Test 10 (click-to-start), Vercel deploy, and all doc updates
-- **How to Run It** — dev, build/preview, and test commands, plus the live URL
-- **Review Findings** — both MUST-FIX items (Vercel deploy incomplete, `waitForFunction` logic flaw) marked fixed; minor issues documented honestly
-- **What's Next** — mobile controls, ghost piece, CI/CD, and the remaining guard upgrades for Tests 8–10
-- **Test Coverage** — real numbers from the test run: 206 Vitest passing, 10 Playwright passing, 99% engine statement coverage; marked **PROJECT COMPLETE**
+**Phase 8: Mobile Touch Controls & Sound Toggle**
+
+- On-screen `#touch-controls` (← ↑ ↓ → ⬛) shown on touch/≤768px viewports via CSS media query
+- `src/input-touch.js` — event delegation, auto-repeat left/right (300ms/80ms), scroll prevention
+- `gameState.muted` class field + `KeyM` binding + `#mute-btn` HUD icon (🔊/🔇)
+- Audio gating in `main.js`; sound queue always drained to prevent buildup
+- `waitForGameReady(page)` shared E2E helper replacing all inline guards
+- E2E Tests 11–14: touch ←, touch rotate, touch hard drop, mute toggle
+- Tests 8/9/10 `waitForFunction` guards upgraded (Phase 7 debt cleared)
+
+**Known gaps carried forward:** R6 mute inconsistency (button blocked during game-over, M key is not); auto-repeat fires without `isActive()` check; no E2E test for touch soft-drop.
+
+**Project is complete** — all 7 BRIEF.md features implemented, 211 Vitest + 14 Playwright tests passing, live at https://sdk-test-lemon.vercel.app.

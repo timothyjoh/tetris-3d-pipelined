@@ -12,8 +12,10 @@ grid overlay, and bloom post-processing.
 - **Piece lock flash** — ~100ms white flash on cells when a piece locks
 - **Line-clear sweep animation** — 150ms left-to-right column wipe across cleared rows before they disappear
 - **Web Audio sound effects** — 8 synthesized tones (move, rotate, soft drop, hard drop, line clear, Tetris, level up, game over); no audio files fetched from network
+- **Mute toggle** — press M during play or tap the 🔊 / 🔇 HUD icon to silence audio; state persists across restarts
 - **Keyboard restart** — press Enter or R on the game-over screen to restart without mouse
 - **Local leaderboard** — top 10 scores stored in `localStorage`; arcade-style 3-character initials entry (A–Z, 0–9) when score qualifies for the top 10
+- **Touch controls** — on-screen button pad (← → ↑ ↓ ⬛) visible on touch devices or narrow viewports (≤768px); hold ← / → for auto-repeat
 
 ## Live Demo
 
@@ -28,16 +30,24 @@ npm run dev     # open localhost:5173
 
 ## Controls
 
+### Keyboard
+
 | Key | Action |
 |-----|--------|
-| ← → | Move left / right |
+| ← / → | Move left / right |
 | ↑ or X | Rotate clockwise |
 | Z | Rotate counter-clockwise |
 | ↓ | Soft drop |
 | Space | Hard drop |
-| P | Pause |
-| Escape | Pause / Resume |
+| P or Escape | Pause / Resume |
+| M | Mute / unmute |
 | Enter or R | Restart (game over screen only) |
+
+### Touch Controls
+
+On touch-capable devices or viewports ≤ 768px wide, an on-screen control pad appears at the
+bottom of the screen: ← (move left), ↑ (rotate), ↓ (soft drop), → (move right), and ⬛ (hard
+drop). Hold ← or → for auto-repeat. Tap the 🔊 / 🔇 icon in the HUD to toggle audio.
 
 ## Scripts
 
